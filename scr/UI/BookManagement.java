@@ -20,7 +20,7 @@ import java.sql.*;
 import java.time.Year;
 
 
-public class BookManagement extends Scene {
+public class BookManagement extends BaseUI {
     public TableView<Book> tableView;
     private ObservableList<Book> bookList = FXCollections.observableArrayList();
     private Connection connection;
@@ -30,14 +30,12 @@ public class BookManagement extends Scene {
     private TextField searchFieldByCategory;
     private TextField searchFieldByQuantity;
     private TextField searchFieldByPublisher;
-
     private BorderPane root;
     private Stage primaryStage;
     public BookManagement(Stage primaryStage) {
-        super(new BorderPane(), 800, 800);
-         root = (BorderPane) getRoot();
-
-         this.primaryStage = primaryStage;
+        super(primaryStage);
+        root = (BorderPane) getRoot();
+        this.primaryStage = primaryStage;
 
         searchFieldByID = new TextField();
         searchFieldByID.setPromptText("Tìm kiếm theo mã sách...");
@@ -284,24 +282,7 @@ public class BookManagement extends Scene {
         tableView.setItems(bookList);
     }
 
-    public void returnMenu() {
-        try {
-            // Tạo một Scene mới cho Demo
-            Scene demoScene = new Menu(primaryStage);
 
-            // Cập nhật Scene của Stage
-            primaryStage.setScene(demoScene);
-        } catch (Exception e) {
-            e.printStackTrace(); // In thông báo lỗi nếu xảy ra ngoại lệ
-        }
-    }
-
-
-    public VBox setting(String label1, Node label2) {
-        Label lb1 = new Label(label1);
-        VBox vb = new VBox(0, lb1, label2);
-        return vb;
-    }
 
     public HBox layout1(int height, Node node1, Node node2, Node node3, Node node4) {
         HBox node = new HBox(height);
@@ -311,27 +292,6 @@ public class BookManagement extends Scene {
         return node;
     }
 
-
-    public HBox layout2(int height, Node node1, Node node2, int y) {
-        HBox node = new HBox(height);
-        node.setSpacing(200);
-        node.getChildren().addAll(node1, node2);
-        node.setTranslateY(y);
-        node.setAlignment(Pos.CENTER);
-        return node;
-    }
-
-    public VBox layout3(int height, Node node1, Node node2, Node node3) {
-        VBox node = new VBox(height);
-        node.getChildren().addAll(node1, node2, node3);
-        node.setAlignment(Pos.CENTER);
-        return node;
-    }
-
-    public void setBtn(Button btn) {
-        btn.setPrefSize(80, 30);
-        btn.setStyle("-fx-text-fill: black; -fx-font-size: 10px;");
-    }
 
 
     private HBox createTableView() {

@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.Random;
 
 
-public class BorrowManagement extends Scene {
+public class BorrowManagement extends BaseUI {
     public TableView<Borrow> tableView;
     private ObservableList<Borrow> borrowList = FXCollections.observableArrayList();
     private Stage primaryStage;
@@ -37,7 +37,7 @@ public class BorrowManagement extends Scene {
     private TextField searchFieldByBookID;
     private TextField searchFieldByreturnDate;
     public BorrowManagement(Stage primaryStage){
-        super(new BorderPane(), 800, 800);
+        super(primaryStage);
         root = (BorderPane) getRoot();
         this.primaryStage = primaryStage;
 
@@ -106,7 +106,7 @@ public class BorrowManagement extends Scene {
         setBtn(btnDelete);
         setBtn(btnSearch);
         setBtn(btnMenu);
-        root.setCenter(layout1(40, btnAdd, btnDelete, btnSearch,btnAddReturnDate, btnMenu));
+        root.setCenter(layout(40, btnAdd, btnDelete, btnSearch,btnAddReturnDate, btnMenu));
         root.setBottom(createBorrowTableView());
 
         DBconnect db = new DBconnect();
@@ -115,13 +115,8 @@ public class BorrowManagement extends Scene {
         fetchBorrowDataFromDatabase();
     }
 
-    public VBox setting(String label1, Node label2) {
-        Label lb1 = new Label(label1);
-        VBox vb = new VBox(0, lb1, label2);
-        return vb;
-    }
 
-    public HBox layout1(int height, Node node1, Node node2, Node node3, Node node4,Node node5) {
+    public HBox layout(int height, Node node1, Node node2, Node node3, Node node4,Node node5) {
         HBox node = new HBox(height);
         node.getChildren().addAll(node1, node2, node3, node4, node5);
         node.setAlignment(Pos.CENTER);  // Set the alignment to center
@@ -130,26 +125,6 @@ public class BorrowManagement extends Scene {
     }
 
 
-    public HBox layout2(int height, Node node1, Node node2, int y) {
-        HBox node = new HBox(height);
-        node.setSpacing(200);
-        node.getChildren().addAll(node1, node2);
-        node.setTranslateY(y);
-        node.setAlignment(Pos.CENTER);
-        return node;
-    }
-
-    public VBox layout3(int height, Node node1, Node node2, Node node3) {
-        VBox node = new VBox(height);
-        node.getChildren().addAll(node1, node2, node3);
-        node.setAlignment(Pos.CENTER);
-        return node;
-    }
-
-    public void setBtn(Button btn) {
-        btn.setPrefSize(80, 30);
-        btn.setStyle("-fx-text-fill: black; -fx-font-size: 10px;");
-    }
 
     private void fetchBorrowDataFromDatabase() {
         String sql = """
@@ -416,19 +391,6 @@ public class BorrowManagement extends Scene {
         tableView.setItems(borrowList);
     }
 
-
-
-    public void returnMenu() {
-        try {
-            // Tạo một Scene mới cho Demo
-            Scene demoScene = new Menu(primaryStage);
-
-            // Cập nhật Scene của Stage
-            primaryStage.setScene(demoScene);
-        } catch (Exception e) {
-            e.printStackTrace(); // In thông báo lỗi nếu xảy ra ngoại lệ
-        }
-    }
 
     private HBox createBorrowTableView() {
         HBox borrowTable = new HBox();

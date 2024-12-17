@@ -6,7 +6,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
@@ -16,7 +15,7 @@ import javafx.stage.Stage;
 
 import java.sql.*;
 
-public class ReaderManagement extends Scene {
+public class ReaderManagement extends BaseUI {
     public TableView<Reader> tableView;
     private ObservableList<Reader> readerList = FXCollections.observableArrayList();
     private Connection connection;
@@ -24,13 +23,12 @@ public class ReaderManagement extends Scene {
     private TextField searchFieldByName;
     private TextField searchFieldByAddress;
     private TextField searchFieldByPhone;
-    private BorderPane root;
     private Stage primaryStage;
+    private BorderPane root;
 
     public ReaderManagement(Stage primaryStage){
-        super(new BorderPane(), 800, 800);
+        super(primaryStage);
         root = (BorderPane) getRoot();
-
         this.primaryStage = primaryStage;
 
         searchFieldByID = new TextField();
@@ -46,7 +44,7 @@ public class ReaderManagement extends Scene {
         searchFieldByPhone = new TextField();
         searchFieldByPhone.setPromptText("Tìm kiếm theo sdt...");
 
-        root.setLeft(layout(20, setting("ID", searchFieldByID), setting("Tên người mượn", searchFieldByName), setting("Địa chỉ", searchFieldByAddress), setting("Số điện thoại", searchFieldByPhone), 100, 40));
+        root.setLeft(layout1(20, setting("ID", searchFieldByID), setting("Tên người mượn", searchFieldByName), setting("Địa chỉ", searchFieldByAddress), setting("Số điện thoại", searchFieldByPhone), 100, 40));
 
         Button btnSearch = new Button("Tìm Kiếm");
         btnSearch.setOnMouseClicked(e -> {
@@ -72,7 +70,7 @@ public class ReaderManagement extends Scene {
         setBtn(btnDelete);
         setBtn(btnSearch);
         setBtn(btnMenu);
-        root.setRight(layout(30, btnAdd, btnDelete,btnSearch, btnMenu, -100, 40));
+        root.setRight(layout1(30, btnAdd, btnDelete,btnSearch, btnMenu, -100, 40));
         root.setBottom(createReaderTableView());
 
         DBconnect db = new DBconnect();
@@ -149,13 +147,8 @@ public class ReaderManagement extends Scene {
     }
 
 
-    public VBox setting(String label1, Node label2) {
-        Label lb1 = new Label(label1);
-        VBox vb = new VBox(0, lb1, label2);
-        return vb;
-    }
 
-    public VBox layout(int height, Node node1, Node node2, Node node3, Node node4, int x, int y) {
+    public VBox layout1(int height, Node node1, Node node2, Node node3, Node node4, int x, int y) {
         VBox node = new VBox(height);
         node.getChildren().addAll(node1, node2, node3, node4);
         node.setTranslateX(x);
@@ -163,12 +156,6 @@ public class ReaderManagement extends Scene {
         return node;
     }
 
-
-
-    public void setBtn(Button btn) {
-        btn.setPrefSize(80, 30);
-        btn.setStyle("-fx-text-fill: black; -fx-font-size: 10px;");
-    }
 
     private void fetchReadersFromDatabase() {
         // Câu lệnh SQL để lấy thông tin độc giả từ cơ sở dữ liệu
@@ -239,19 +226,6 @@ public class ReaderManagement extends Scene {
         tableView.setItems(readerList);
     }
 
-
-
-    public void returnMenu() {
-        try {
-            // Tạo một Scene mới cho Demo
-            Scene demoScene = new Menu(primaryStage);
-
-            // Cập nhật Scene của Stage
-            primaryStage.setScene(demoScene);
-        } catch (Exception e) {
-            e.printStackTrace(); // In thông báo lỗi nếu xảy ra ngoại lệ
-        }
-    }
 
     private HBox createReaderTableView() {
         HBox readerTable = new HBox();
