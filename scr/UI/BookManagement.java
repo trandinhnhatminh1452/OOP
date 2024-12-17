@@ -17,6 +17,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.stage.Stage;
 
 import java.sql.*;
+import java.time.Year;
 
 
 public class BookManagement extends Scene {
@@ -186,29 +187,60 @@ public class BookManagement extends Scene {
 
 
     private void addBookToDatabase(Book book) {
-        String sql = "INSERT INTO library.book(\n" +
-                "\tbookid, bookname, categoryid, authorid, publisherid, quantity)\n" +
-                "\tVALUES (?, ?, (Select categoryid from library.category where categoryname = ?), \n" +
-                "\t(Select authorid from library.author where authorname = ?), ?, ?);";
+        int currentYear = Year.now().getValue();
+        String checkAuthorSql = "SELECT authorid FROM library.author WHERE authorname = ?";
+        String insertAuthorSql = "INSERT INTO library.author (authorname) VALUES (?)";
+        String insertBookSql = "INSERT INTO library.book (bookid, bookname, categoryid, authorid, publisherid, quantity,publishedyear) " +
+                "VALUES (?, ?, (SELECT categoryid FROM library.category WHERE categoryname = ?), ?, ?, ?, ?)";
 
-        System.out.println(book.getCategory().getCategoryName());
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, book.getBookId());
-            stmt.setString(2, book.getTitle());
-            stmt.setString(3, book.getCategory().getCategoryName());
-            stmt.setString(4, book.getAuthor());
-            stmt.setString(5, book.getPublisher());
-            stmt.setInt(6, book.getQuantity());  // Example: Published year
-            stmt.executeUpdate();
-            System.out.println("Book added: " + book.getTitle());
+        try {
+            // 1. Kiểm tra xem tác giả đã tồn tại chưa
+            String authorId = null;
+            try (PreparedStatement checkAuthorStmt = connection.prepareStatement(checkAuthorSql)) {
+                checkAuthorStmt.setString(1, book.getAuthor());
+                ResultSet rs = checkAuthorStmt.executeQuery();
+
+                if (rs.next()) {
+                    // Tác giả đã tồn tại, lấy authorid
+                    authorId = rs.getString("authorid");
+                } else {
+                    // Tác giả chưa tồn tại, thêm tác giả mới và lấy authorid
+                    try (PreparedStatement insertAuthorStmt = connection.prepareStatement(insertAuthorSql, Statement.RETURN_GENERATED_KEYS)) {
+                        insertAuthorStmt.setString(1, book.getAuthor());
+                        insertAuthorStmt.executeUpdate();
+
+                        // Lấy ID của tác giả mới
+                        ResultSet generatedKeys = insertAuthorStmt.getGeneratedKeys();
+                        if (generatedKeys.next()) {
+                            authorId = generatedKeys.getString(1);
+                        }
+                    }
+                }
+            }
+
+            // 2. Thêm sách vào bảng book
+            try (PreparedStatement insertBookStmt = connection.prepareStatement(insertBookSql)) {
+                insertBookStmt.setString(1, book.getBookId());
+                insertBookStmt.setString(2, book.getTitle());
+                insertBookStmt.setString(3, book.getCategory().getCategoryName());
+                insertBookStmt.setString(4, authorId); // Sử dụng authorId đã lấy được
+                insertBookStmt.setString(5, book.getPublisher());
+                insertBookStmt.setInt(6, book.getQuantity());
+                insertBookStmt.setInt(7, currentYear);
+                insertBookStmt.executeUpdate();
+                System.out.println("Book added: " + book.getTitle());
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        // Cập nhật danh sách sách trong TableView
         bookList.add(book);
         tableView.setItems(null);  // Đặt danh sách hiện tại về null
         tableView.setItems(bookList);  // Đặt lại danh sách để làm mới bảng
-
     }
+
 
     private void deleteBooks() {
         String searchTermID = searchFieldByID.getText().trim();

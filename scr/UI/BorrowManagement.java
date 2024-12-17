@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Random;
 
 
 public class BorrowManagement extends Scene {
@@ -293,39 +294,75 @@ public class BorrowManagement extends Scene {
 
 
     private void addBorrowToDatabase(Borrow borrow) {
-        String sql = """
+        String cardId = null;
+
+        Random random = new Random();
+        int staffIdNumber = random.nextInt(10) + 1;  // Tạo StaffID ngẫu nhiên từ 1 đến 10
+        String staffId = String.valueOf(staffIdNumber);
+
+        // Truy vấn để lấy CardID từ ReaderID thông qua JOIN giữa LibraryCard và Reader
+        String checkCardQuery = """
+        SELECT lc.CardID
+        FROM library.LibraryCard lc
+        JOIN library.Reader r ON lc.CardID = r.CardID
+        WHERE r.ReaderID = ?;  
+    """;
+
+        try (PreparedStatement checkCardStmt = connection.prepareStatement(checkCardQuery)) {
+            // Thực hiện truy vấn với ReaderID
+            checkCardStmt.setString(1, borrow.getReader().getReaderId());  // Sử dụng ReaderID từ đối tượng Borrow
+
+            try (ResultSet rs = checkCardStmt.executeQuery()) {
+                if (rs.next()) {
+                    cardId = rs.getString("CardID");  // Lấy CardID từ kết quả truy vấn
+                } else {
+                    System.out.println("Error: Không tìm thấy CardID cho ReaderID: " + borrow.getReader().getReaderId());
+                    return;  // Dừng nếu không tìm thấy CardID
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;  // Nếu có lỗi truy vấn, dừng lại
+        }
+
+        // Nếu CardID tồn tại, tiếp tục chèn vào bảng Loan và LoanDetail
+        if (cardId != null) {
+            String sql = """
         INSERT INTO library.Loan (LoanID, CardID, StaffID, LoanDate)
         VALUES (?, ?, ?, ?);
 
         INSERT INTO library.LoanDetail (LoanID, BookID, DueDate, ReturnDate)
         VALUES (?, ?, ?, ?);
-    """;
+        """;
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            // Lưu vào bảng Loan
-            stmt.setString(1, borrow.getBorrowId());
-            stmt.setString(2, borrow.getReader().getReaderId());  // CardID từ đối tượng Reader
-            stmt.setString(3, "StaffIDPlaceholder");  // Cần thay thế với StaffID thực tế
-            stmt.setDate(4, java.sql.Date.valueOf(borrow.getBorrowDate()));  // Ngày mượn (LoanDate)
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                // Lưu vào bảng Loan
+                stmt.setString(1, borrow.getBorrowId());
+                stmt.setString(2, cardId);
+                stmt.setString(3, staffId);
+                stmt.setDate(4, java.sql.Date.valueOf(borrow.getBorrowDate()));
 
-            // Lưu vào bảng LoanDetail
-            stmt.setString(5, borrow.getBorrowId());  // LoanID (khớp với bảng Loan)
-            stmt.setString(6, borrow.getBook().getBookId());  // BookID từ đối tượng Book
-            stmt.setDate(7, java.sql.Date.valueOf(borrow.getDueDate()));  // DueDate (Hạn trả)
-            stmt.setDate(8, borrow.getReturnDate() != null ? java.sql.Date.valueOf(borrow.getReturnDate()) : null);  // ReturnDate (Ngày trả), có thể null
+                // Lưu vào bảng LoanDetail
+                stmt.setString(5, borrow.getBorrowId());  // LoanID (khớp với bảng Loan)
+                stmt.setString(6, borrow.getBook().getBookId());  // BookID từ đối tượng Book
+                stmt.setDate(7, java.sql.Date.valueOf(borrow.getDueDate()));  // DueDate (Hạn trả)
+                stmt.setDate(8, borrow.getReturnDate() != null ? java.sql.Date.valueOf(borrow.getReturnDate()) : null);  // ReturnDate (Ngày trả), có thể null
 
-            // Thực hiện lệnh SQL
-            stmt.executeUpdate();
-            System.out.println("Borrow record added for LoanID: " + borrow.getBorrowId());
-        } catch (SQLException e) {
-            e.printStackTrace();
+                // Thực hiện lệnh SQL
+                stmt.executeUpdate();
+                System.out.println("Borrow record added for LoanID: " + borrow.getBorrowId());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            // Thêm vào danh sách borrowList và cập nhật TableView
+            borrowList.add(borrow);
+            tableView.setItems(null);
+            tableView.setItems(borrowList);
         }
-
-        // Thêm vào danh sách borrowList và cập nhật TableView
-        borrowList.add(borrow);
-        tableView.setItems(null);
-        tableView.setItems(borrowList);
     }
+
+
 
     private void deleteBorrows() {
         String searchTermLoanID = searchFieldByborrowId.getText().trim();

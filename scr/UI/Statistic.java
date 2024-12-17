@@ -60,7 +60,7 @@ public class Statistic extends Scene {
 
 
         setBtn(btnMenu);
-        root.setBottom(btnMenu);
+        root.setCenter(btnMenu);
 
 
     }
