@@ -13,8 +13,6 @@ import java.sql.*;
 
 public class BaseUI extends Scene {
     protected Stage primaryStage;
-    protected Connection connection;
-
 
     public BaseUI( Stage primaryStage) {
         super(new BorderPane(), 800, 800);

@@ -3,6 +3,7 @@ package UI;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -10,13 +11,15 @@ public class Menu extends Scene {
 
     public Menu(Stage primaryStage) {
         super(new VBox(20),800,800);
+        Label title = new Label("Hệ Thống Quản Lý Thư Viện");
+        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
         Button btn1 = new Button("Quản Lý Sách");
         Button btn2 = new Button("Quản Lý Người Mượn");
         Button btn3 = new Button("Quản lý Phiếu Mượn");
         Button btn4 = new Button("Thống Kê");
 
         VBox root = (VBox)getRoot();
-        root.getChildren().addAll(btn1,btn2,btn3,btn4);
+        root.getChildren().addAll(title,btn1,btn2,btn3,btn4);
         root.setAlignment(Pos.CENTER);
         setBtn(btn1);
         setBtn(btn2);
