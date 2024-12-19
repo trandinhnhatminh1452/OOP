@@ -9,14 +9,26 @@ public class Borrow {
     private LocalDate returnDate;
     private Book book;
     private Reader reader;
+    private String condition;  // Tình trạng sách
 
-    public Borrow(String borrowId, LocalDate borrowDate, LocalDate dueDate,LocalDate returnDate, Book book, Reader reader) {
+    // Constructor with condition
+    public Borrow(String borrowId, LocalDate borrowDate, LocalDate dueDate, LocalDate returnDate, Book book, Reader reader, String condition) {
         this.borrowId = borrowId;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.returnDate = returnDate;
         this.book = book;
         this.reader = reader;
+        this.condition = condition;
+    }
+
+    // Getters and setters
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 
     public Borrow(String borrowId, LocalDate borrowDate, LocalDate dueDate, Book book, Reader reader) {
@@ -44,46 +56,46 @@ public class Borrow {
 
 
     // Getters and Setters
-    public String getBorrowId() { 
-        return borrowId; 
+    public String getBorrowId() {
+        return borrowId;
     }
-    public void setBorrowId(String borrowId) { 
-        this.borrowId = borrowId; 
-    }
-
-    public LocalDate getBorrowDate() { 
-        return borrowDate; 
-    }
-    public void setBorrowDate(LocalDate borrowDate) { 
-        this.borrowDate = borrowDate; 
+    public void setBorrowId(String borrowId) {
+        this.borrowId = borrowId;
     }
 
-    public LocalDate getDueDate() { 
-        return dueDate; 
+    public LocalDate getBorrowDate() {
+        return borrowDate;
     }
-    public void setDueDate(LocalDate dueDate) { 
-        this.dueDate = dueDate; 
-    }
-
-    public LocalDate getReturnDate() { 
-        return returnDate; 
-    }
-    public void setReturnDate(LocalDate returnDate) { 
-        this.returnDate = returnDate; 
+    public void setBorrowDate(LocalDate borrowDate) {
+        this.borrowDate = borrowDate;
     }
 
-    public Book getBook() { 
-        return book; 
+    public LocalDate getDueDate() {
+        return dueDate;
     }
-    public void setBook(Book book) { 
-        this.book = book; 
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 
-    public Reader getReader() { 
-        return reader; 
+    public LocalDate getReturnDate() {
+        return returnDate;
     }
-    public void setReader(Reader reader) { 
-        this.reader = reader; 
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+
+    public Book getBook() {
+        return book;
+    }
+    public void setBook(Book book) {
+        this.book = book;
+    }
+
+    public Reader getReader() {
+        return reader;
+    }
+    public void setReader(Reader reader) {
+        this.reader = reader;
     }
 
     @Override

@@ -8,6 +8,7 @@ public class UI extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
+            primaryStage.setTitle("Ứng dụng Quản Lý");
             primaryStage.setScene(new Menu(primaryStage));
             primaryStage.show();
         } catch(Exception e) {

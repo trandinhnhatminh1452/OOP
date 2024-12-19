@@ -6,7 +6,6 @@ import java.util.List;
 public class Reader {
     private String readerId;
     private String name;
-
     private String phoneNumber;
     private String address;
     private List<Borrow> borrowHistory = new ArrayList<>();;
@@ -21,6 +20,9 @@ public class Reader {
 
     public Reader(String readerId) {
         this.readerId = readerId;
+    }
+
+    public Reader() {
     }
 
     // Getters and Setters

@@ -105,7 +105,6 @@ public class BookManagement extends BaseUI {
         // Fetch books from the database
         fetchBooksFromDatabase();
 
-
     }
 
     private void searchBooks() {

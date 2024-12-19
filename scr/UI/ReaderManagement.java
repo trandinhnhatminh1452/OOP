@@ -158,7 +158,7 @@ public class ReaderManagement extends BaseUI {
 
 
     private void fetchReadersFromDatabase() {
-        // Câu lệnh SQL để lấy thông tin độc giả từ cơ sở dữ liệu
+
         String sql = "SELECT readerid, readername, Address, phonenumber FROM library.reader";
 
         try (Statement stmt = connection.createStatement();

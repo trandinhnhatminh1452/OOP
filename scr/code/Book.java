@@ -22,6 +22,10 @@ public class Book {
 
     }
 
+    public Book() {
+
+    }
+
     public String getBookId() {
         return bookId;
     }
