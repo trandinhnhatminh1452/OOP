@@ -7,12 +7,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.stage.Stage;
 
@@ -31,7 +29,6 @@ public class BookManagement extends BaseUI {
     private TextField searchFieldByQuantity;
     private TextField searchFieldByPublisher;
     private BorderPane root;
-    private Stage primaryStage;
     public BookManagement(Stage primaryStage) {
         super(primaryStage);
         root = (BorderPane) getRoot();

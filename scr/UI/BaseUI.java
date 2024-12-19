@@ -34,6 +34,7 @@ public class BaseUI extends Scene {
 
             // Cập nhật Scene của Stage
             primaryStage.setScene(menuScene);
+            primaryStage.setTitle("Ứng dụng Quản Lý");
         } catch (Exception e) {
             e.printStackTrace(); // In thông báo lỗi nếu xảy ra ngoại lệ
         }

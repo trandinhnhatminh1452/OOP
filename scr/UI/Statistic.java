@@ -30,7 +30,6 @@ public class Statistic extends BaseUI {
     private ObservableList<Borrow> borrowList3 = FXCollections.observableArrayList();
     private Connection connection;
     private BorderPane root;
-    private Stage primaryStage;
 
     public Statistic(Stage primaryStage) {
         super(primaryStage);
@@ -39,6 +38,7 @@ public class Statistic extends BaseUI {
 
         DBconnect db = new DBconnect();
         this.connection = db.connect();
+
 
         int totalBorrowers = countTotalBorrowers();
         int totalBooksBorrowed = countTotalBooksBorrowed();

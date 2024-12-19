@@ -28,18 +28,22 @@ public class Menu extends Scene {
 
         btn1.setOnMouseClicked(e->{
             primaryStage.setScene(new BookManagement(primaryStage));
+            primaryStage.setTitle("Quản lý sách");
         });
 
         btn2.setOnMouseClicked(e->{
             primaryStage.setScene(new ReaderManagement(primaryStage));
+            primaryStage.setTitle("Quản lý người mượn");
         });
 
         btn3.setOnMouseClicked(e->{
             primaryStage.setScene(new BorrowManagement(primaryStage));
+            primaryStage.setTitle("Quản lý phiếu mượn");
         });
 
         btn4.setOnMouseClicked(e->{
             primaryStage.setScene(new Statistic(primaryStage));
+            primaryStage.setTitle("Thống kê");
         });
     }
 
