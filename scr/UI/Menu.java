@@ -21,10 +21,10 @@ public class Menu extends Scene {
         VBox root = (VBox)getRoot();
         root.getChildren().addAll(title,btn1,btn2,btn3,btn4);
         root.setAlignment(Pos.CENTER);
-        setBtn(btn1);
-        setBtn(btn2);
-        setBtn(btn3);
-        setBtn(btn4);
+        setBtnMenu(btn1);
+        setBtnMenu(btn2);
+        setBtnMenu(btn3);
+        setBtnMenu(btn4);
 
         btn1.setOnMouseClicked(e->{
             primaryStage.setScene(new BookManagement(primaryStage));
@@ -47,7 +47,7 @@ public class Menu extends Scene {
         });
     }
 
-    public void setBtn(Button btn){
+    public void setBtnMenu(Button btn){
         btn.setPrefSize(300,80);
         btn.setStyle(
                 "-fx-background-color: linear-gradient(#87CEEB, white);" + // Gradient nền

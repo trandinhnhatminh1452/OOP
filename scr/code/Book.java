@@ -17,15 +17,9 @@ public class Book {
         this.category = category;
     }
 
-    public Book(String bookId) {
-        this.bookId = bookId;
-
-    }
-
+    public Book(String bookId) {this.bookId = bookId;}
     public Book() {
-
     }
-
     public String getBookId() {
         return bookId;
     }

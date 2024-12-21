@@ -1,28 +1,17 @@
 package UI;
 
 import DB.DBconnect;
-import code.Book;
-import code.Borrow;
-import code.Category;
-import code.Reader;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import code.*;
+import javafx.collections.*;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
-
 import java.sql.*;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Random;
-
 
 public class BorrowManagement extends BaseUI {
     public TableView<Borrow> tableView;
@@ -122,7 +111,6 @@ public class BorrowManagement extends BaseUI {
         fetchBorrowDataFromDatabase();
     }
 
-
     public HBox layout(int height, Node node1, Node node2, Node node3, Node node4,Node node5) {
         HBox node = new HBox(height);
         node.getChildren().addAll(node1, node2, node3, node4, node5);
@@ -147,15 +135,10 @@ public class BorrowManagement extends BaseUI {
             JOIN library.LoanDetail ld ON l.LoanID = ld.LoanID
             JOIN library.Book b ON ld.BookID = b.BookID
             """;
-
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-
-            // Xóa danh sách cũ
             borrowList.clear();
-
             while (rs.next()) {
-                // Lấy các giá trị từ kết quả truy vấn
                 String loanId = rs.getString("LoanID");
                 String bookId = rs.getString("BookID");
                 LocalDate loanDate = rs.getDate("LoanDate").toLocalDate();
@@ -164,23 +147,15 @@ public class BorrowManagement extends BaseUI {
                 String readerId = rs.getString("ReaderID");
                 String isdamaged = rs.getBoolean("isdamaged") ? "Có" : "Không";
 
-                // Tạo đối tượng Reader
-                Reader reader = new Reader(readerId); // Chỉ cần ID của người mượn
-
-                // Tạo đối tượng Book
-                Book book = new Book(bookId); // Chỉ cần ID của sách
-
-                // Tạo đối tượng Borrow
+                Reader reader = new Reader(readerId);
+                Book book = new Book(bookId);
                 Borrow borrow = new Borrow(loanId, loanDate, dueDate, returnDate, book, reader,isdamaged);
 
-                // Thêm vào danh sách borrowList
                 borrowList.add(borrow);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        // Cập nhật TableView
         tableView.setItems(borrowList);
     }
 
@@ -209,7 +184,6 @@ public class BorrowManagement extends BaseUI {
             }
         }
 
-        // Cập nhật TableView với danh sách đã lọc
         tableView.setItems(filteredList);
     }
 
@@ -233,37 +207,29 @@ public class BorrowManagement extends BaseUI {
     }
 
     private void updateIsDamaged() {
-        // Lấy giá trị IsDamaged từ ComboBox (hoặc có thể từ TextField nếu bạn muốn)
-        String isDamagedText = isDamagedComboBox.getValue();  // Hoặc isDamagedField.getText() nếu là TextField
+        String isDamagedText = isDamagedComboBox.getValue();
 
         if (isDamagedText == null || isDamagedText.isEmpty()) {
             System.out.println("Thông tin hư hỏng không hợp lệ");
             return;
         }
 
-        // Kiểm tra giá trị từ ComboBox (Yes/No)
         boolean isDamaged = isDamagedText.equals("Có");
 
-        // Lấy giá trị borrowId từ TextField
-        String borrowId = searchFieldByborrowId.getText().trim();  // Sử dụng TextField cho mã mượn
+        String borrowId = searchFieldByborrowId.getText().trim();
 
         if (borrowId.isEmpty()) {
             System.out.println("Mã mượn không hợp lệ");
             return;
         }
 
-        // Cập nhật giá trị IsDamaged vào cơ sở dữ liệu
         String updateIsDamagedSql = " UPDATE library.LoanDetail" +
                                     "SET IsDamaged = ?" +
                                     "WHERE LoanID = ?";
-
-
         try (PreparedStatement pstmt = connection.prepareStatement(updateIsDamagedSql)) {
-            // Truyền giá trị boolean trực tiếp (true hoặc false)
-            pstmt.setBoolean(1, isDamaged);  // Thay vì "Yes" hay "No", truyền boolean trực tiếp
-            pstmt.setString(2, borrowId);  // Set LoanID từ borrowId nhập vào
+            pstmt.setBoolean(1, isDamaged);
+            pstmt.setString(2, borrowId);
 
-            // Thực thi câu lệnh cập nhật và kiểm tra số dòng bị ảnh hưởng
             int rowsAffected = pstmt.executeUpdate();
 
             if (rowsAffected > 0) {
@@ -276,13 +242,12 @@ public class BorrowManagement extends BaseUI {
             System.out.println("Lỗi khi cập nhật thông tin IsDamaged: " + e.getMessage());
         }
 
-        // Cập nhật lại TableView
         tableView.setItems(null);
-        fetchBorrowDataFromDatabase();  // Tải lại dữ liệu từ cơ sở dữ liệu
+        fetchBorrowDataFromDatabase();
     }
 
     private void updateReturnDates() {
-        // Lấy giá trị ngày trả từ TextField
+
         String returnDateText = searchFieldByreturnDate.getText().trim();
 
         if (returnDateText.isEmpty()) {
@@ -290,7 +255,7 @@ public class BorrowManagement extends BaseUI {
             return;
         }
 
-        // Chỉ tạo Borrow nếu đã có LoanID (borrowId) từ người dùng
+        // Chỉ tạo Borrow nếu đã có borrowId từ người dùng
         String borrowId = searchFieldByborrowId.getText().trim();
         if (borrowId.isEmpty()) {
             System.out.println("Mã mượn không hợp lệ");
@@ -298,9 +263,8 @@ public class BorrowManagement extends BaseUI {
         }
 
         Borrow borrow = new Borrow();
-        borrow.setBorrowId(borrowId);  // Đảm bảo thiết lập borrowId
+        borrow.setBorrowId(borrowId);
 
-        // Cập nhật ngày trả vào cơ sở dữ liệu
         String updateReturnDateSql = """
     UPDATE library.LoanDetail
     SET ReturnDate = ?
@@ -308,16 +272,15 @@ public class BorrowManagement extends BaseUI {
     """;
 
         try (PreparedStatement pstmt = connection.prepareStatement(updateReturnDateSql)) {
-            pstmt.setDate(1, java.sql.Date.valueOf(returnDateText)); // Set ngày trả
-            pstmt.setString(2, borrow.getBorrowId()); // Set LoanID từ đối tượng Borrow
-            // Thực thi câu lệnh cập nhật và kiểm tra số dòng bị ảnh hưởng
+            pstmt.setDate(1, java.sql.Date.valueOf(returnDateText));
+            pstmt.setString(2, borrow.getBorrowId());
+
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Lỗi khi cập nhật ngày trả: " + e.getMessage());
         }
 
-        // Cập nhật lại TableView
         tableView.setItems(null);
         tableView.setItems(borrowList);
         fetchBorrowDataFromDatabase();
@@ -330,7 +293,6 @@ public class BorrowManagement extends BaseUI {
         int staffIdNumber = random.nextInt(10) + 1;  // Tạo StaffID ngẫu nhiên từ 1 đến 10
         String staffId = String.valueOf(staffIdNumber);
 
-        // Truy vấn để lấy CardID từ ReaderID thông qua JOIN giữa LibraryCard và Reader
         String checkCardQuery = """
         SELECT lc.CardID
         FROM library.LibraryCard lc
@@ -339,20 +301,19 @@ public class BorrowManagement extends BaseUI {
     """;
 
         try (PreparedStatement checkCardStmt = connection.prepareStatement(checkCardQuery)) {
-            // Thực hiện truy vấn với ReaderID
-            checkCardStmt.setString(1, borrow.getReader().getReaderId());  // Sử dụng ReaderID từ đối tượng Borrow
+            checkCardStmt.setString(1, borrow.getReader().getReaderId());
 
             try (ResultSet rs = checkCardStmt.executeQuery()) {
                 if (rs.next()) {
-                    cardId = rs.getString("CardID");  // Lấy CardID từ kết quả truy vấn
+                    cardId = rs.getString("CardID");
                 } else {
                     System.out.println("Error: Không tìm thấy CardID cho ReaderID: " + borrow.getReader().getReaderId());
-                    return;  // Dừng nếu không tìm thấy CardID
+                    return;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return;  // Nếu có lỗi truy vấn, dừng lại
+            return;
         }
 
         // Nếu CardID tồn tại, tiếp tục chèn vào bảng Loan và LoanDetail
@@ -366,26 +327,22 @@ public class BorrowManagement extends BaseUI {
         """;
 
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-                // Lưu vào bảng Loan
                 stmt.setString(1, borrow.getBorrowId());
                 stmt.setString(2, cardId);
                 stmt.setString(3, staffId);
                 stmt.setDate(4, java.sql.Date.valueOf(borrow.getBorrowDate()));
 
-                // Lưu vào bảng LoanDetail
                 stmt.setString(5, borrow.getBorrowId());  // LoanID (khớp với bảng Loan)
                 stmt.setString(6, borrow.getBook().getBookId());  // BookID từ đối tượng Book
                 stmt.setDate(7, java.sql.Date.valueOf(borrow.getDueDate()));  // DueDate (Hạn trả)
-                stmt.setDate(8, borrow.getReturnDate() != null ? java.sql.Date.valueOf(borrow.getReturnDate()) : null);  // ReturnDate (Ngày trả), có thể null
+                stmt.setDate(8, borrow.getReturnDate() != null ? java.sql.Date.valueOf(borrow.getReturnDate()) : null);
 
-                // Thực hiện lệnh SQL
                 stmt.executeUpdate();
                 System.out.println("Borrow record added for LoanID: " + borrow.getBorrowId());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
-            // Thêm vào danh sách borrowList và cập nhật TableView
             borrowList.add(borrow);
             tableView.setItems(null);
             tableView.setItems(borrowList);
@@ -400,7 +357,7 @@ public class BorrowManagement extends BaseUI {
         String searchTermDueDate = searchFieldBydueDate.getText().trim();
         String searchTermReturnDate = searchFieldByreturnDate.getText().trim();
 
-        // Điều kiện xóa trong danh sách
+        //xóa trong danh sách
         borrowList.removeIf(borrow ->
                 (searchTermLoanID.isEmpty() || borrow.getBorrowId().equalsIgnoreCase(searchTermLoanID)) &&
                         (searchTermReaderID.isEmpty() || borrow.getReaderId().equalsIgnoreCase(searchTermReaderID)) &&
@@ -439,7 +396,6 @@ public class BorrowManagement extends BaseUI {
             e.printStackTrace();
         }
 
-        // Làm mới TableView
         tableView.setItems(null);
         tableView.setItems(borrowList);
     }
@@ -447,54 +403,46 @@ public class BorrowManagement extends BaseUI {
     private HBox createBorrowTableView() {
         HBox borrowTable = new HBox();
         borrowTable.setTranslateY(-10);
-        this.tableView = new TableView<>(); // Sửa kiểu TableView thành Borrow
+        this.tableView = new TableView<>();
         tableView.prefWidthProperty().bind(borrowTable.widthProperty().multiply(1));
 
-        // Tạo cột Mã mượn
         TableColumn<Borrow, String> colBorrowId = new TableColumn<>("Mã mượn");
-        colBorrowId.setCellValueFactory(new PropertyValueFactory<>("borrowId")); // Thuộc tính "borrowId" trong lớp Borrow
+        colBorrowId.setCellValueFactory(new PropertyValueFactory<>("borrowId"));
         colBorrowId.setStyle("-fx-alignment: center;");
         colBorrowId.prefWidthProperty().bind(tableView.widthProperty().multiply(0.1));
 
-        // Tạo cột Mã người mượn
         TableColumn<Borrow, String> colReaderId = new TableColumn<>("Mã người mượn");
-        colReaderId.setCellValueFactory(new PropertyValueFactory<>("readerId")); // Thuộc tính "readerId" trong lớp Borrow
+        colReaderId.setCellValueFactory(new PropertyValueFactory<>("readerId"));
         colReaderId.setStyle("-fx-alignment: center;");
         colReaderId.prefWidthProperty().bind(tableView.widthProperty().multiply(0.15));
 
-        // Tạo cột Mã sách
         TableColumn<Borrow, String> colBookId = new TableColumn<>("Mã sách");
-        colBookId.setCellValueFactory(new PropertyValueFactory<>("bookId")); // Thuộc tính "bookId" trong lớp Borrow
+        colBookId.setCellValueFactory(new PropertyValueFactory<>("bookId"));
         colBookId.setStyle("-fx-alignment: center;");
         colBookId.prefWidthProperty().bind(tableView.widthProperty().multiply(0.1));
 
-        // Tạo cột Ngày mượn
         TableColumn<Borrow, String> colBorrowDate = new TableColumn<>("Ngày mượn");
-        colBorrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate")); // Thuộc tính "borrowDate" trong lớp Borrow
+        colBorrowDate.setCellValueFactory(new PropertyValueFactory<>("borrowDate"));
         colBorrowDate.setStyle("-fx-alignment: center;");
         colBorrowDate.prefWidthProperty().bind(tableView.widthProperty().multiply(0.15));
 
-        // Tạo cột Hạn trả
         TableColumn<Borrow, String> colReturnDueDate = new TableColumn<>("Hạn trả");
-        colReturnDueDate.setCellValueFactory(new PropertyValueFactory<>("returnDueDate")); // Thuộc tính "returnDueDate" trong lớp Borrow
+        colReturnDueDate.setCellValueFactory(new PropertyValueFactory<>("returnDueDate"));
         colReturnDueDate.setStyle("-fx-alignment: center;");
         colReturnDueDate.prefWidthProperty().bind(tableView.widthProperty().multiply(0.15));
 
-        // Tạo cột Ngày trả
         TableColumn<Borrow, String> colReturnDate = new TableColumn<>("Ngày trả");
-        colReturnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate")); // Thuộc tính "returnDate" trong lớp Borrow
+        colReturnDate.setCellValueFactory(new PropertyValueFactory<>("returnDate"));
         colReturnDate.setStyle("-fx-alignment: center;");
         colReturnDate.prefWidthProperty().bind(tableView.widthProperty().multiply(0.15));
-        // Tạo cột Tình trạng hư hỏng
+
         TableColumn<Borrow, String> colIsDamaged = new TableColumn<>("Tình trạng hư hỏng");
-        colIsDamaged.setCellValueFactory(new PropertyValueFactory<>("condition")); // Thuộc tính "isDamaged" trong lớp Borrow
+        colIsDamaged.setCellValueFactory(new PropertyValueFactory<>("condition"));
         colIsDamaged.setStyle("-fx-alignment: center;");
         colIsDamaged.prefWidthProperty().bind(tableView.widthProperty().multiply(0.2));
 
-        // Thêm tất cả các cột vào TableView
         tableView.getColumns().addAll(colBorrowId, colReaderId, colBookId, colBorrowDate, colReturnDueDate, colReturnDate,colIsDamaged);
 
-        // Trả về TableView
         borrowTable.getChildren().add(tableView);
         borrowTable.setAlignment(Pos.CENTER);
         return borrowTable;

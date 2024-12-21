@@ -1,26 +1,16 @@
 package UI;
 
 import DB.DBconnect;
-import code.Book;
-import code.Borrow;
-import code.Reader;
+import code.*;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.*;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.LocalDate;
 
 public class Statistic extends BaseUI {
@@ -38,7 +28,6 @@ public class Statistic extends BaseUI {
 
         DBconnect db = new DBconnect();
         this.connection = db.connect();
-
 
         int totalBorrowers = countTotalBorrowers();
         int totalBooksBorrowed = countTotalBooksBorrowed();
@@ -80,15 +69,13 @@ public class Statistic extends BaseUI {
         setBtn(btnDamaged);
         setBtn(btnMenu);
         root.setCenter(layout1(30, btnOverdue, btnUnreturn, btnDamaged, btnMenu));
-
-        // Default view is an empty table
         root.setBottom(new VBox());
     }
 
     public HBox layout1(int height, Node node1, Node node2, Node node3, Node node4) {
         HBox node = new HBox(height);
         node.getChildren().addAll(node1, node2, node3, node4);
-        node.setAlignment(Pos.CENTER);  // Set the alignment to center
+        node.setAlignment(Pos.CENTER);
         node.setTranslateY(20);
         return node;
     }
@@ -179,7 +166,7 @@ public class Statistic extends BaseUI {
             e.printStackTrace();
         }
 
-        showTableUnreturn(borrowList2);
+        showTableUnreturnAndOverDue(borrowList2);
     }
 
     private void fetchUnreturnedBooksDataFromDatabase() {
@@ -234,11 +221,10 @@ public class Statistic extends BaseUI {
             e.printStackTrace();
         }
 
-        showTableUnreturn(borrowList3);
+        showTableUnreturnAndOverDue(borrowList3);
     }
 
-
-    private void showTableUnreturn(ObservableList<Borrow> borrowList) {
+    private void showTableUnreturnAndOverDue(ObservableList<Borrow> borrowList) {
         tableView = new TableView<>();
         tableView.setItems(borrowList);
         tableView.prefWidthProperty().bind(tableView.widthProperty().multiply(1));

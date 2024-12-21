@@ -13,10 +13,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.stage.Stage;
-
 import java.sql.*;
 import java.time.Year;
-
 
 public class BookManagement extends BaseUI {
     public TableView<Book> tableView;
@@ -53,11 +51,6 @@ public class BookManagement extends BaseUI {
         searchFieldByPublisher = new TextField();
         searchFieldByPublisher.setPromptText("Tìm kiếm theo NXB...");
 
-        Button btnSearch = new Button("Tìm Kiếm");
-        btnSearch.setOnMouseClicked(e -> {
-            searchBooks();
-        });
-
         root.setTop(
                 layout2(
                         20,
@@ -73,6 +66,11 @@ public class BookManagement extends BaseUI {
                         ),
                         30)
         );
+
+        Button btnSearch = new Button("Tìm Kiếm");
+        btnSearch.setOnMouseClicked(e -> {
+            searchBooks();
+        });
 
         Button btnAdd = new Button("Thêm");
         btnAdd.setOnMouseClicked(e -> {
@@ -102,6 +100,14 @@ public class BookManagement extends BaseUI {
         // Fetch books from the database
         fetchBooksFromDatabase();
 
+    }
+
+    public HBox layout1(int height, Node node1, Node node2, Node node3, Node node4) {
+        HBox node = new HBox(height);
+        node.getChildren().addAll(node1, node2, node3, node4);
+        node.setAlignment(Pos.CENTER);  // Set the alignment to center
+        node.setTranslateY(20);
+        return node;
     }
 
     private void searchBooks() {
@@ -154,7 +160,6 @@ public class BookManagement extends BaseUI {
 
         try (Statement stmt = connection.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
-
             while (rs.next()) {
                 String bookId = rs.getString("bookid");
                 String bookName = rs.getString("bookname");
@@ -164,9 +169,7 @@ public class BookManagement extends BaseUI {
                 String categoryId = rs.getString("categoryid");
                 String categoryName = rs.getString("categoryname");
 
-                // Create Category, Author, Publisher, and Book objects
                 Category category = new Category(categoryId, categoryName);
-
                 Book book = new Book(bookId, bookName, authorName, publisherName, quantity, category);
 
                 // Add book to the list
@@ -177,6 +180,10 @@ public class BookManagement extends BaseUI {
         }
 
         root.setBottom(createTableView());
+    }
+
+    public void addBookData(Book book) {
+        bookList.add(book);
     }
 
 
@@ -217,7 +224,7 @@ public class BookManagement extends BaseUI {
                 insertBookStmt.setString(1, book.getBookId());
                 insertBookStmt.setString(2, book.getTitle());
                 insertBookStmt.setString(3, book.getCategory().getCategoryName());
-                insertBookStmt.setString(4, authorId); // Sử dụng authorId đã lấy được
+                insertBookStmt.setString(4, authorId);
                 insertBookStmt.setString(5, book.getPublisher());
                 insertBookStmt.setInt(6, book.getQuantity());
                 insertBookStmt.setInt(7, currentYear);
@@ -231,10 +238,9 @@ public class BookManagement extends BaseUI {
 
         // Cập nhật danh sách sách trong TableView
         bookList.add(book);
-        tableView.setItems(null);  // Đặt danh sách hiện tại về null
-        tableView.setItems(bookList);  // Đặt lại danh sách để làm mới bảng
+        tableView.setItems(null);
+        tableView.setItems(bookList);
     }
-
 
     private void deleteBooks() {
         String searchTermID = searchFieldByID.getText().trim();
@@ -242,7 +248,7 @@ public class BookManagement extends BaseUI {
         String searchTermAuthor = searchFieldByAuthor.getText().trim();
         String searchTermCategory = searchFieldByCategory.getText().trim();
 
-        // Điều kiện xóa trong danh sách
+        //Xóa trong bookList
         bookList.removeIf(book ->
                 (searchTermID.isEmpty() || book.getBookId().equalsIgnoreCase(searchTermID)) &&
                         (searchTermName.isEmpty() || book.getTitle().equalsIgnoreCase(searchTermName)) &&
@@ -273,21 +279,10 @@ public class BookManagement extends BaseUI {
             e.printStackTrace();
         }
 
-        // Làm mới TableView
+        // Cập nhật TableView
         tableView.setItems(null);
         tableView.setItems(bookList);
     }
-
-
-
-    public HBox layout1(int height, Node node1, Node node2, Node node3, Node node4) {
-        HBox node = new HBox(height);
-        node.getChildren().addAll(node1, node2, node3, node4);
-        node.setAlignment(Pos.CENTER);  // Set the alignment to center
-        node.setTranslateY(20);
-        return node;
-    }
-
 
 
     private HBox createTableView() {
@@ -296,7 +291,6 @@ public class BookManagement extends BaseUI {
         this.tableView = new TableView<>();
         tableView.prefWidthProperty().bind(hbox2.widthProperty().multiply(0.8));
 
-        // Define columns for the table
         TableColumn<Book, String> colBookId = new TableColumn<>("Mã sách");
         colBookId.setCellValueFactory(new PropertyValueFactory<>("bookId"));
         colBookId.setStyle("-fx-alignment: center;");
@@ -327,20 +321,12 @@ public class BookManagement extends BaseUI {
         colCategory.setStyle("-fx-alignment: center;");
         colCategory.prefWidthProperty().bind(tableView.widthProperty().multiply(0.2));
 
-        // Add columns to the table
         tableView.getColumns().addAll(colBookId, colTitle, colAuthor, colPublisher, colQuantity, colCategory);
 
-        // Bind the table to the ObservableList
         tableView.setItems(bookList);
 
-        // Add the table to the HBox
         hbox2.getChildren().add(tableView);
         hbox2.setAlignment(Pos.CENTER);
-
         return hbox2;
-    }
-
-    public void addBookData(Book book) {
-        bookList.add(book);
     }
 }

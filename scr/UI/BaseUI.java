@@ -9,8 +9,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.sql.*;
-
 public class BaseUI extends Scene {
     protected Stage primaryStage;
 
@@ -19,10 +17,10 @@ public class BaseUI extends Scene {
         this.primaryStage = primaryStage;
     }
 
-
+    //Tạo khoảng cách giữa các lable
     public VBox setting(String label1, Node label2) {
         Label lb1 = new Label(label1);
-        VBox vb = new VBox(5, lb1, label2); // Khoảng cách giữa các thành phần là 5px
+        VBox vb = new VBox(5, lb1, label2);
         return vb;
     }
 
@@ -40,11 +38,13 @@ public class BaseUI extends Scene {
         }
     }
 
+    //ĐỊnh dạng cho nút
     public void setBtn(Button btn) {
         btn.setPrefSize(80, 30);
         btn.setStyle("-fx-text-fill: black; -fx-font-size: 10px;");
     }
 
+    // Tạo khoảng cách cho các textField
     public HBox layout2(int height, Node node1, Node node2, int y) {
         HBox node = new HBox(height);
         node.setSpacing(200);
@@ -60,6 +60,4 @@ public class BaseUI extends Scene {
         node.setAlignment(Pos.CENTER);
         return node;
     }
-
-
 }
