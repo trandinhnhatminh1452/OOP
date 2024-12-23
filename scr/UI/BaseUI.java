@@ -60,4 +60,5 @@ public class BaseUI extends Scene {
         node.setAlignment(Pos.CENTER);
         return node;
     }
+
 }

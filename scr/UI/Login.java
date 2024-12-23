@@ -2,8 +2,6 @@ package UI;
 
 import DB.DBconnect;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -11,31 +9,34 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class Login extends Scene {
+public class Login extends BaseScene {
     private TextField txtUsername;
     private PasswordField txtPassword;
-    private BorderPane root;
 
     public Login(Stage primaryStage) {
-
-        super(new BorderPane(), 800, 800);
-        root = (BorderPane) getRoot(); // Lấy root từ Scene
-
+        super(primaryStage, 800, 800);
+        setupUI(); // Gọi phương thức để thiết lập giao diện
+    }
+    @Override
+    public void setupUI() {
         txtUsername = new TextField();
         txtUsername.setMaxWidth(200);
-
         txtPassword = new PasswordField();
         txtPassword.setMaxWidth(200);
-
         Button btnLogin = new Button("Đăng nhập");
+        VBox form = new VBox(20, setting("Tài khoản", txtUsername), setting("Mật khẩu", txtPassword), btnLogin);
+        form.setAlignment(Pos.CENTER);
 
-        root.setCenter(layout(20, setting("Tài khoản", txtUsername), setting("Mật khẩu", txtPassword), btnLogin));
+        BorderPane root = new BorderPane();
+        root.setCenter(form);
+        this.setRoot(root);
 
-        setBtnStyle(btnLogin);
+        setBtnStyle(btnLogin, 200, 40);
 
         btnLogin.setOnAction(e -> {
             if (authenticate(txtUsername.getText(), txtPassword.getText())) {
@@ -49,16 +50,9 @@ public class Login extends Scene {
         });
     }
 
-    public VBox layout(int height, Node node1, Node node2, Node node3) {
-        VBox node = new VBox(height);
-        node.getChildren().addAll(node1, node2, node3);
-        node.setAlignment(Pos.CENTER);
-        return node;
-    }
-
-    public VBox setting(String label1, Node label2) {
-        Label lb1 = new Label(label1);
-        VBox vb = new VBox(5, lb1, label2);
+    private VBox setting(String labelText, TextField field) {
+        Label label = new Label(labelText);
+        VBox vb = new VBox(5, label, field);
         vb.setAlignment(Pos.CENTER);
         return vb;
     }
@@ -77,17 +71,4 @@ public class Login extends Scene {
         }
     }
 
-
-    // Hàm đặt style cho nút
-    private void setBtnStyle(Button btn) {
-        btn.setPrefSize(200, 40);
-        btn.setStyle(
-                "-fx-background-color: linear-gradient(#87CEEB, white);" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 10, 0, 2, 2);" +
-                        "-fx-text-fill: black;" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-padding: 10 20;"
-        );
-    }
 }
