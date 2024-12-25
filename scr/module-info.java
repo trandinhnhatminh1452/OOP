@@ -5,6 +5,7 @@ module scr {
     requires java.base;        // Được tự động thêm, nhưng bạn có thể khai báo rõ ràng
     requires java.sql;
     opens code to javafx.base;
-    exports UI;
+    exports GUI;
+    exports Function;
     exports code;
 }

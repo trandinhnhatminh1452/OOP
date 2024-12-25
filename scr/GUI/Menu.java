@@ -1,5 +1,6 @@
-package UI;
+package GUI;
 
+import Function.*;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -9,7 +10,7 @@ import javafx.stage.Stage;
 public class Menu extends BaseScene {
     public Menu(Stage primaryStage) {
         super(primaryStage, 800, 800);
-        setupUI(); // Gọi phương thức để thiết lập giao diện
+        setupUI();
     }
 
     @Override

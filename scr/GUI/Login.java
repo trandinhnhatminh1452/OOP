@@ -1,4 +1,4 @@
-package UI;
+package GUI;
 
 import DB.DBconnect;
 import javafx.geometry.Pos;

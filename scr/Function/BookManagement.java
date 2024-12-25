@@ -1,4 +1,4 @@
-package UI;
+package Function;
 
 import DB.DBconnect;
 import code.Book;
@@ -94,10 +94,9 @@ public class BookManagement extends BaseUI {
         root.setCenter(layout1(30, btnAdd, btnDelete,btnSearch, btnMenu));
         root.setBottom(createTableView());
 
-        // Open database connection
         DBconnect db = new DBconnect();
         this.connection = db.connect();
-        // Fetch books from the database
+
         fetchBooksFromDatabase();
 
     }
@@ -139,19 +138,20 @@ public class BookManagement extends BaseUI {
         tableView.setItems(filteredList);
     }
 
-
     private Book creatBook(){
         String searchTermID = searchFieldByID.getText().trim();
         String searchTermName = searchFieldByName.getText().trim();
         String searchTermAuthor = searchFieldByAuthor.getText().trim();
         String searchTermCategory = searchFieldByCategory.getText().trim();
+        String searchTermPublisher = searchFieldByPublisher.getText().trim();
+        Integer searchTermQuantity = Integer.parseInt(searchFieldByQuantity.getText().trim());
         Category category = new Category("", searchTermCategory);
-        return new Book(searchTermID,searchTermName,searchTermAuthor,"100",100,category);
+        return new Book(searchTermID,searchTermName,searchTermAuthor,searchTermPublisher,searchTermQuantity,category);
     }
 
 
     private void fetchBooksFromDatabase() {
-        String sql = "SELECT b.bookid, b.bookname,b.quantity, b.authorid, a.authorname, b.publisherid, p.publishername, b.publishedyear, " +
+        String sql = "SELECT b.bookid, b.bookname,b.quantity, a.authorname, p.publishername, " +
                 "c.categoryid, c.categoryname " +
                 "FROM library.book b " +
                 "JOIN library.category c ON b.categoryid = c.categoryid " +
@@ -182,35 +182,35 @@ public class BookManagement extends BaseUI {
         root.setBottom(createTableView());
     }
 
-    public void addBookData(Book book) {
-        bookList.add(book);
-    }
-
 
     private void addBookToDatabase(Book book) {
         int currentYear = Year.now().getValue();
+
         String checkAuthorSql = "SELECT authorid FROM library.author WHERE authorname = ?";
         String insertAuthorSql = "INSERT INTO library.author (authorname) VALUES (?)";
-        String insertBookSql = "INSERT INTO library.book (bookid, bookname, categoryid, authorid, publisherid, quantity,publishedyear) " +
+        String checkPublisherSql = "SELECT publisherid FROM library.publisher WHERE publishername = ?";
+        String insertPublisherSql = "INSERT INTO library.publisher (publishername) VALUES (?)";
+        String insertBookSql = "INSERT INTO library.book (bookid, bookname, categoryid, authorid, publisherid, quantity, publishedyear) " +
                 "VALUES (?, ?, (SELECT categoryid FROM library.category WHERE categoryname = ?), ?, ?, ?, ?)";
 
         try {
-            // 1. Kiểm tra xem tác giả đã tồn tại chưa
+            connection.setAutoCommit(false); // Bắt đầu transaction
+
             String authorId = null;
+            String publisherId = null;
+
+            // Kiểm tra hoặc thêm tác giả vào cơ sở dữ liệu
             try (PreparedStatement checkAuthorStmt = connection.prepareStatement(checkAuthorSql)) {
                 checkAuthorStmt.setString(1, book.getAuthor());
                 ResultSet rs = checkAuthorStmt.executeQuery();
 
                 if (rs.next()) {
-                    // Tác giả đã tồn tại, lấy authorid
                     authorId = rs.getString("authorid");
                 } else {
-                    // Tác giả chưa tồn tại, thêm tác giả mới và lấy authorid
                     try (PreparedStatement insertAuthorStmt = connection.prepareStatement(insertAuthorSql, Statement.RETURN_GENERATED_KEYS)) {
                         insertAuthorStmt.setString(1, book.getAuthor());
                         insertAuthorStmt.executeUpdate();
 
-                        // Lấy ID của tác giả mới
                         ResultSet generatedKeys = insertAuthorStmt.getGeneratedKeys();
                         if (generatedKeys.next()) {
                             authorId = generatedKeys.getString(1);
@@ -219,28 +219,67 @@ public class BookManagement extends BaseUI {
                 }
             }
 
-            // 2. Thêm sách vào bảng book
+            // Kiểm tra hoặc thêm nhà xuất bản vào cơ sở dữ liệu
+            try (PreparedStatement checkPublisherStmt = connection.prepareStatement(checkPublisherSql)) {
+                checkPublisherStmt.setString(1, book.getPublisher());
+                ResultSet rs = checkPublisherStmt.executeQuery();
+
+                if (rs.next()) {
+                    publisherId = rs.getString("publisherid");
+                } else {
+                    try (PreparedStatement insertPublisherStmt = connection.prepareStatement(insertPublisherSql, Statement.RETURN_GENERATED_KEYS)) {
+                        insertPublisherStmt.setString(1, book.getPublisher());
+                        insertPublisherStmt.executeUpdate();
+
+                        ResultSet generatedKeys = insertPublisherStmt.getGeneratedKeys();
+                        if (generatedKeys.next()) {
+                            publisherId = generatedKeys.getString(1);
+                        }
+                    }
+                }
+            }
+
+            // Thêm sách vào bảng book
             try (PreparedStatement insertBookStmt = connection.prepareStatement(insertBookSql)) {
                 insertBookStmt.setString(1, book.getBookId());
                 insertBookStmt.setString(2, book.getTitle());
                 insertBookStmt.setString(3, book.getCategory().getCategoryName());
                 insertBookStmt.setString(4, authorId);
-                insertBookStmt.setString(5, book.getPublisher());
+                insertBookStmt.setString(5, publisherId);
                 insertBookStmt.setInt(6, book.getQuantity());
                 insertBookStmt.setInt(7, currentYear);
                 insertBookStmt.executeUpdate();
-                System.out.println("Book added: " + book.getTitle());
             }
 
+            connection.commit(); // Xác nhận transaction
+            System.out.println("Book added to database: " + book.getTitle());
         } catch (SQLException e) {
+            try {
+                connection.rollback(); // Rollback nếu có lỗi
+                System.out.println("Transaction rolled back due to an error.");
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
+        } finally {
+            try {
+                connection.setAutoCommit(true); // Trở lại chế độ auto-commit
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
 
-        // Cập nhật danh sách sách trong TableView
+        // Cập nhật bảng hiển thị
         bookList.add(book);
         tableView.setItems(null);
         tableView.setItems(bookList);
     }
+
+
+    public void addBookData(Book book) {
+        bookList.add(book);
+    }
+
 
     private void deleteBooks() {
         String searchTermID = searchFieldByID.getText().trim();

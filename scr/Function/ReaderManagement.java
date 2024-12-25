@@ -1,4 +1,4 @@
-package UI;
+package Function;
 
 import DB.DBconnect;
 import code.Reader;
@@ -20,7 +20,6 @@ public class ReaderManagement extends BaseUI {
     private TextField searchFieldByName;
     private TextField searchFieldByAddress;
     private TextField searchFieldByPhone;
-    private Stage primaryStage;
     private BorderPane root;
 
     public ReaderManagement(Stage primaryStage){
@@ -205,7 +204,6 @@ public class ReaderManagement extends BaseUI {
         }
 
         readerList.add(reader);
-
         tableView.setItems(null);
         tableView.setItems(readerList);
     }

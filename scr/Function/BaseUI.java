@@ -1,5 +1,6 @@
-package UI;
+package Function;
 
+import GUI.Menu;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;

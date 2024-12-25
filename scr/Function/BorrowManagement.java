@@ -1,4 +1,4 @@
-package UI;
+package Function;
 
 import DB.DBconnect;
 import code.*;
@@ -86,7 +86,7 @@ public class BorrowManagement extends BaseUI {
             deleteBorrows();
         });
 
-        Button btnAddReturnDate = new Button("Cập nhật ngày trả");
+        Button btnAddReturnDate = new Button("Cập nhật");
         btnAddReturnDate.setOnMouseClicked(e -> {
             updateReturnDates();
             updateIsDamaged();
