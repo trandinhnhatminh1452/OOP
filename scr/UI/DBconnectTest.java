@@ -6,7 +6,7 @@ import java.sql.Connection;
 
 public class DBconnectTest {
     public static void main(String[] args) {
-        // Gọi phương thức connect() từ DBconnect
+
         System.out.println("Testing database connection...");
 
         Connection connection = DBconnect.connect();

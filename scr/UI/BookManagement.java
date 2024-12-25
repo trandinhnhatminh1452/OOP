@@ -172,7 +172,7 @@ public class BookManagement extends BaseUI {
                 Category category = new Category(categoryId, categoryName);
                 Book book = new Book(bookId, bookName, authorName, publisherName, quantity, category);
 
-                // Add book to the list
+
                 addBookData(book);
             }
         } catch (SQLException e) {

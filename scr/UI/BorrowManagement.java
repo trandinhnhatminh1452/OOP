@@ -217,37 +217,36 @@ public class BorrowManagement extends BaseUI {
         boolean isDamaged = isDamagedText.equals("Có");
 
         String borrowId = searchFieldByborrowId.getText().trim();
-
         if (borrowId.isEmpty()) {
             System.out.println("Mã mượn không hợp lệ");
             return;
         }
 
-        String updateIsDamagedSql = " UPDATE library.LoanDetail" +
-                                    "SET IsDamaged = ?" +
-                                    "WHERE LoanID = ?";
+        String updateIsDamagedSql = """
+        UPDATE library.LoanDetail
+        SET IsDamaged = ?
+        WHERE LoanID = ?;
+    """;
+
         try (PreparedStatement pstmt = connection.prepareStatement(updateIsDamagedSql)) {
             pstmt.setBoolean(1, isDamaged);
             pstmt.setString(2, borrowId);
 
             int rowsAffected = pstmt.executeUpdate();
-
             if (rowsAffected > 0) {
-                System.out.println("Thông tin hư hỏng đã được cập nhật thành công.");
+                System.out.println("Cập nhật tình trạng hư hỏng thành công.");
             } else {
-                System.out.println("Không có bản ghi nào được cập nhật.");
+                System.out.println("Không thể cập nhật.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Lỗi khi cập nhật thông tin IsDamaged: " + e.getMessage());
+            System.out.println("Lỗi khi cập nhật IsDamaged: " + e.getMessage());
         }
 
-        tableView.setItems(null);
         fetchBorrowDataFromDatabase();
     }
 
     private void updateReturnDates() {
-
         String returnDateText = searchFieldByreturnDate.getText().trim();
 
         if (returnDateText.isEmpty()) {
@@ -255,34 +254,33 @@ public class BorrowManagement extends BaseUI {
             return;
         }
 
-        // Chỉ tạo Borrow nếu đã có borrowId từ người dùng
         String borrowId = searchFieldByborrowId.getText().trim();
         if (borrowId.isEmpty()) {
             System.out.println("Mã mượn không hợp lệ");
             return;
         }
 
-        Borrow borrow = new Borrow();
-        borrow.setBorrowId(borrowId);
-
         String updateReturnDateSql = """
-    UPDATE library.LoanDetail
-    SET ReturnDate = ?
-    WHERE LoanID = ? AND ReturnDate IS NULL;
+        UPDATE library.LoanDetail
+        SET ReturnDate = ?
+        WHERE LoanID = ? AND ReturnDate IS NULL;
     """;
 
         try (PreparedStatement pstmt = connection.prepareStatement(updateReturnDateSql)) {
             pstmt.setDate(1, java.sql.Date.valueOf(returnDateText));
-            pstmt.setString(2, borrow.getBorrowId());
+            pstmt.setString(2, borrowId);
 
-            pstmt.executeUpdate();
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Cập nhật ngày trả thành công.");
+            } else {
+                System.out.println("Không tìm thấy bản ghi để cập nhật.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Lỗi khi cập nhật ngày trả: " + e.getMessage());
         }
 
-        tableView.setItems(null);
-        tableView.setItems(borrowList);
         fetchBorrowDataFromDatabase();
     }
 
@@ -351,54 +349,35 @@ public class BorrowManagement extends BaseUI {
 
     private void deleteBorrows() {
         String searchTermLoanID = searchFieldByborrowId.getText().trim();
-        String searchTermReaderID = searchFieldByReaderID.getText().trim();
-        String searchTermBookID = searchFieldByBookID.getText().trim();
-        String searchTermLoanDate = searchFieldByborrowDate.getText().trim();
-        String searchTermDueDate = searchFieldBydueDate.getText().trim();
-        String searchTermReturnDate = searchFieldByreturnDate.getText().trim();
 
-        //xóa trong danh sách
-        borrowList.removeIf(borrow ->
-                (searchTermLoanID.isEmpty() || borrow.getBorrowId().equalsIgnoreCase(searchTermLoanID)) &&
-                        (searchTermReaderID.isEmpty() || borrow.getReaderId().equalsIgnoreCase(searchTermReaderID)) &&
-                        (searchTermBookID.isEmpty() || borrow.getBookId().equalsIgnoreCase(searchTermBookID)) &&
-                        (searchTermLoanDate.isEmpty() || borrow.getBorrowDate().toString().equals(searchTermLoanDate)) &&
-                        (searchTermDueDate.isEmpty() || borrow.getDueDate().toString().equals(searchTermDueDate)) &&
-                        (searchTermReturnDate.isEmpty() || (borrow.getReturnDate() != null && borrow.getReturnDate().toString().equals(searchTermReturnDate)))
-        );
+        if (searchTermLoanID.isEmpty()) {
+            System.out.println("Vui lòng nhập mã mượn để xóa.");
+            return;
+        }
 
-        // Xóa trong cơ sở dữ liệu
-        String sql = "DELETE FROM library.Loan WHERE " +
-                "(? = '' OR LoanID = ?) AND " +
-                "(? = '' OR ReaderID = ?) AND " +
-                "(? = '' OR BookID = ?) AND " +
-                "(? = '' OR LoanDate = ?) AND " +
-                "(? = '' OR DueDate = ?) AND " +
-                "(? = '' OR ReturnDate = ?)";
+        String sql = "DELETE FROM library.Loan WHERE LoanID = ?;";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, searchTermLoanID);
-            stmt.setString(2, searchTermLoanID);
-            stmt.setString(3, searchTermReaderID);
-            stmt.setString(4, searchTermReaderID);
-            stmt.setString(5, searchTermBookID);
-            stmt.setString(6, searchTermBookID);
-            stmt.setString(7, searchTermLoanDate);
-            stmt.setString(8, searchTermLoanDate);
-            stmt.setString(9, searchTermDueDate);
-            stmt.setString(10, searchTermDueDate);
-            stmt.setString(11, searchTermReturnDate);
-            stmt.setString(12, searchTermReturnDate);
 
             int rowsDeleted = stmt.executeUpdate();
-            System.out.println("Số bản ghi đã xóa: " + rowsDeleted);
+
+            if (rowsDeleted > 0) {
+                System.out.println("Xóa thành công LoanID: " + searchTermLoanID);
+
+                borrowList.removeIf(borrow -> borrow.getBorrowId().equalsIgnoreCase(searchTermLoanID));
+
+                tableView.setItems(FXCollections.observableArrayList(borrowList));
+                tableView.refresh();
+            } else {
+                System.out.println("Không tìm thấy LoanID để xóa.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println("Lỗi khi xóa bản ghi: " + e.getMessage());
         }
-
-        tableView.setItems(null);
-        tableView.setItems(borrowList);
     }
+
 
     private HBox createBorrowTableView() {
         HBox borrowTable = new HBox();

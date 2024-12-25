@@ -20,7 +20,7 @@ public class Login extends BaseScene {
 
     public Login(Stage primaryStage) {
         super(primaryStage, 800, 800);
-        setupUI(); // Gọi phương thức để thiết lập giao diện
+        setupUI();
     }
     @Override
     public void setupUI() {
